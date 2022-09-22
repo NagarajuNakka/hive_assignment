@@ -1,0 +1,103 @@
+1)INNER JOIN
+hive> SELECT *
+    > FROM order
+    > INNER JOIN customers
+    > ON order.customer_id=customers.id;
+--returned all the common records between two tables
+2)LEFT OUTER JOIN
+hive> SELECT *
+    > FROM order
+    > LEFT JOIN customers
+    > ON order.customer_id=customers.id;
+--returned all the records from left tables and also matchng records from right table
+3)RIGHT OUTER JOIN
+hive> SELECT *
+    > FROM order
+    > RIGHT JOIN customers
+    > ON order.customer_id=customers.id;
+--returned all the records from Rright tables and also matchng records from left table
+4)FULL OTER JOIN
+hive> SELECT *
+    > FROM order
+    > FULL OUTER JOIN customers
+    > ON order.customer_id=customers.id;
+--returned all the matching records and non matching records from left and right table 
+
+
+
+
+BUILD A DATA PIPELINE WITH HIVE
+1. Create a hive table as per given schema in your dataset
+	 create table AirQuality
+    >  (
+    > Date timestamp,
+    > Time timestamp,
+    > CO_GT float,
+    > PT08_S1_CO int,
+    > NMHC_GT int,
+    > C6H6_GT float,
+    > PT08_S2_NMHC int,
+    > NOx_GT int,
+    > PT08_S3_NMHC int,
+    > NO2_GT int,
+    > PT08_S4_N02 int,
+    > PT08_S5_03 int,
+    > T float,
+    > RH float,
+    > AH float
+    > )
+    > ROW FORMAT DELIMITED
+    > FIELDS TERMINATED BY ','
+    > STORED AS TEXTFILE
+    > TBLPROPERTIES("skip.header.line.count"="1");
+
+2. try to place a data into table location
+	load data local inpath '/home/cloudera/AirQuality.xlsx' into table AirQuality;
+3. Perform a select operation .
+	select * from airquality;
+4.Fetch the result of the select operation in your local as a csv file
+	hive> INSERT OVERWRITE LOCAL DIRECTORY '/home/raj_ops'
+    	    > select * from AirQuality;
+5.Perform group by operation
+	select * from airquality group by date;
+6.Perform filter operation at least 5 kinds of filter examples
+	1.select * from airquality where date='2004-03-10 00:00:00'
+	2.select * from airquality where date between '2004-03-10 00:00:00' and '2005-05-10 00:00:00';
+	3.select * from airquality where PT08_S1_CO in (1000,882,864);
+	4.select * from airquality where PT08_S1_CO like '88%'
+	5. select * from airquality where PT08_S1_CO is null;
+7.how and example of regex operation
+	select * from airquality where PT08_S1_CO REGEXP '^16';
+8.alter table operation 
+	alter table AirQuality drop column T;
+9.order by operation 
+	select * from airquality order by date;
+10.where clause operations you have to perform
+	select * from airquality where R=100;
+11.sorting operation you have to perform 
+	select * from airquality order by date desc;
+12.distinct operation you have to perform 
+	select distinct(T) from airquality
+13.like an operation you have to perform
+	select * from airquality where R like '8%'
+14.union operation you have to perform
+	hive> select date from airquality
+    	> union
+    	> select T from airquality;
+15.table view operation you have to perform .
+	create view qir as select date,T from airquality where PT08_S1_CO like '88%';
+16. drop table operation
+	 drop table qirquality;
+
+
+
+
+
+
+
+
+
+
+	
+
+

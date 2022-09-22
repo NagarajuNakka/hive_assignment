@@ -1,0 +1,119 @@
+ORDERNUMBER,QUANTITYORDERED,PRICEEACH,ORDERLINENUMBER,SALES,STATUS,QTR_ID,MONTH_ID,YEAR_ID,PRODUCTLINE,MSRP,PRODUCTCODE,PHONE,CITY,STATE,POSTALCODE,COUNTRY,TERRITORY,CONTACTLASTNAME,CONTACTFIRSTNAME,DEALSIZE
+1))hive>
+    > create table sales_order_csv
+    >      (
+    >      ORDERNUMBER int,
+    >      QUANTITYORDERED int,
+    >      PRICEEACH float,
+    >      ORDERLINENUMBER int,
+    >      SALES int,
+    >      STATUS string,
+    >      QTR_ID int,
+    >      MONTH_ID int,
+    >      YEAR_ID int,
+    >      PRODUCT_LINE string,
+    >      MSRP int,
+    >      PRODUCT_CODE string,
+    >      PHONE string,
+    >      CITY string,
+    >      STATE string,
+    >      POSTALCODE string,
+    >      COUNTRY string,
+    >      TERRITORY string,
+    >      CONTACTLASTNAME string,
+    >      CONTACTFIRSTNAME string,
+    >      DEALSIZE string
+    >      )
+    >      row format delimited
+    >      fields terminated by ','
+    >      tblproperties('skip.header.line.count'='1');
+
+
+
+ 2))load data local inpath '/home/cloudera/sales_order_data.csv' into table sales_order_csv;
+
+
+
+
+3)hive>
+    > create table sales_order_orc
+    >       (
+    >           ORDERNUMBER int,
+    >           QUANTITYORDERED int,
+    >           PRICEEACH float,
+    >           ORDERLINENUMBER int,
+    >           SALES int,
+    >           STATUS string,
+    >           QTR_ID int,
+    >           MONTH_ID int,
+    >           YEAR_ID int,
+    >           PRODUCT_LINE string,
+    >           MSRP int,
+    >           PRODUCT_CODE string,
+    >           PHONE string,
+    >           CITY string,
+    >           STATE string,
+    >           POSTALCODE string,
+    >           COUNTRY string,
+    >           TERRITORY string,
+    >           CONTACTLASTNAME string,
+    >           CONTACTFIRSTNAME string,
+    >           DEALSIZE string
+    >           )
+    >           stored as orc;
+
+4)insert table overwrite sales_order_orc select * from sales_order_csv;
+
+5) Calculatye total sales per year
+	select YEAR_ID,SUM(SALES) from sales_order_orc GROUP BY YEAR_ID;
+	2003    3516514
+	2004    4723531
+	2005    1791264
+
+6) Find a product for which maximum orders were placed
+	select new.product_code from (select product_code, sum(quantityordered) as h from sales_order_orc group by product_code) as new group by new.product_code having max(new.h)>1400;
+	S18_3232
+7)Calculate the total sales for each quarter
+	select qtr_id,sum(sales) from sales_order_orc group by qtr_id;
+	1       2350510
+	2       2047855
+	3       1758673
+	4       3874271
+8)In which quarter sales was minimum
+	select qtr_id,min(sales) from sales_order_orc group by qtr_id order by sales;
+	2       482
+	3       577
+	1       683
+	4       694
+
+9) In which country sales was maximum and in which country sales was minimum
+	select country,sum(sales) as g from sales_order_orc group by country order by g desc limit 1--coutry sales was maximum
+	USA     3627511
+	select country,sum(sales) as g from sales_order_orc group by country order by g limit 1--country sales minimum
+	Ireland 57749
+10)Calculate quartelry sales for each city
+	select sum(sales),city,qtr_id from sales_order_orc group by qtr_id,city order by city,qtr_id;
+11)Find a month for each year in which maximum number of quantities were sold
+	select * from(select sum(sales) ,month_id,year_id,RANK() OVER(partition by year_id order by sum(sales) desc) as rank from sales_order_orc group by month_id,year_id) as new where new.rank=1;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
